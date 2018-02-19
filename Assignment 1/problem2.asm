@@ -61,7 +61,8 @@ readChoice:	li $v0, 5		# reads user choice
 		syscall
 		blt $v0, 1, menu	# reprint the menu if the choice is invalid
 		bgt $v0, 4, menu
-		beq $v0, 1, rowDis
+		beq $v0, 1, rowDis	# choice 1: display row
+		beq $v0, 2, colDis
 		beq $v0, 4, exit	# choice 4: exit
 rowDis:		la $a0, prompt4_1	# prompt for row number
 		li $v0, 4
@@ -83,6 +84,31 @@ printRow:	lw $a0, ($t0)		# print row
 		addi $t1, $t1, 1
 		addi $t0, $t0, 4
 		blt $t1, $s0, printRow
+		li $a0, 10		# print new line
+		li $v0, 11
+		syscall
+		j menu
+colDis:		la $a0, prompt4_2	# prompt for column number
+		li $v0, 4
+		syscall
+		li $v0, 5
+		syscall	
+		bltz $v0, err2		# branch if out of range
+		bge $v0, $s0, err2
+		move $t0, $v0	# calculate column address
+		sll $t0, $t0, 2
+		add $t0, $t0, $s1
+		move $t1, $zero
+		mul $t2, $s0, 4		# increment amount
+printCol:	lw $a0, ($t0)		# print column
+		li $v0, 1
+		syscall
+		li $a0, 9		# print tap
+		li $v0, 11
+		syscall
+		addi $t1, $t1, 1
+		add $t0, $t0, $t2
+		blt $t1, $s0, printCol
 		li $a0, 10		# print new line
 		li $v0, 11
 		syscall
