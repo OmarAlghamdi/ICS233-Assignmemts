@@ -62,7 +62,8 @@ readChoice:	li $v0, 5		# reads user choice
 		blt $v0, 1, menu	# reprint the menu if the choice is invalid
 		bgt $v0, 4, menu
 		beq $v0, 1, rowDis	# choice 1: display row
-		beq $v0, 2, colDis
+		beq $v0, 2, colDis	# choice 2: display column
+		beq $v0, 3, diaDis	# choice 3: display the main diagonal
 		beq $v0, 4, exit	# choice 4: exit
 rowDis:		la $a0, prompt4_1	# prompt for row number
 		li $v0, 4
@@ -113,6 +114,23 @@ printCol:	lw $a0, ($t0)		# print column
 		li $v0, 11
 		syscall
 		j menu
+diaDis:		addi $t2, $s0, 1	# calculate increment
+		sll $t2, $t2, 2
+		move $t0, $s1
+		move $t1, $zero
+printDia:	lw $a0, ($t0)
+		li $v0, 1
+		syscall
+		li $a0, 9		# print tap
+		li $v0, 11
+		syscall
+		addi $t1, $t1, 1
+		add $t0, $t0, $t2
+		blt $t1, $s0, printDia
+		li $a0, 10		# print new line
+		li $v0, 11
+		syscall
+		j menu	
 err2:		la $a0, errMessage2	# invalid row
 		li $v0, 4
 		syscall
