@@ -59,10 +59,38 @@ menu:		la $a0, prompt4		# print menu
 		syscall
 readChoice:	li $v0, 5		# reads user choice
 		syscall
-		ble $v0, 1, menu	# reprint the menu if the choice is invalid
+		blt $v0, 1, menu	# reprint the menu if the choice is invalid
 		bgt $v0, 4, menu
-		
+		beq $v0, 1, rowDis
 		beq $v0, 4, exit	# choice 4: exit
-		
+rowDis:		la $a0, prompt4_1	# prompt for row number
+		li $v0, 4
+		syscall
+		li $v0, 5
+		syscall
+		bltz $v0, err2		# branch if out of range
+		bge $v0, $s0, err2
+		mul $t0, $v0, $s0	# calculate row address	
+		sll $t0, $t0, 2	
+		add $t0, $t0, $s1
+		move $t1, $zero
+printRow:	lw $a0, ($t0)		# print row
+		li $v0, 1
+		syscall
+		li $a0, 9		# print tap
+		li $v0, 11
+		syscall
+		addi $t1, $t1, 1
+		addi $t0, $t0, 4
+		blt $t1, $s0, printRow
+		li $a0, 10		# print new line
+		li $v0, 11
+		syscall
+		j menu
+err2:		la $a0, errMessage2	# invalid row
+		li $v0, 4
+		syscall
+		j menu
+		syscall
 exit:		li $v0, 10		# terminate
 		syscall
