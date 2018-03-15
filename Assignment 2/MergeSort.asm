@@ -19,19 +19,19 @@ msg2:		.ascii	"\nThe sorted array is:\n"
 	move $s1, $v0	# store array location
 	sll $s2, $s0, 2	# store the last index
 	addu $s2, $s2, $s1
-	jal read_array
-	la $a0, msg1
+	jal read_array	# reads the array
+	la $a0, msg1	# print the unordered array
 	li $v0, 4
 	syscall
 	jal print_array
-	la $a0, msg2
+	la $a0, msg2	# print the ordered array
 	li $v0, 4
 	syscall
-	move $a0, $s1
+	move $a0, $s1	# sort the array
 	move $a1, $s0
 	jal merge_sort
 	jal print_array
-exit:	li $v0, 10
+exit:	li $v0, 10	# exit
 	syscall		
 read_array:	la $a0, prompt2		# prompts for array content
 		li $v0, 4
@@ -107,11 +107,11 @@ merge_sort:	bgt $a1, 1, else2
 		sw $a1, 4($sp)		# store n
 		sw $ra, ($sp)		# store the return adduress
 		srl $s5, $a1, 1		# s5 = m =n/2
-		sw $s5, 12($sp)		#store m
-		lw $a0, 8($sp)
+		sw $s5, 12($sp)		# store m
+		lw $a0, 8($sp)		# sort the first half
 		lw $a1, 12($sp)
 		jal merge_sort
-		lw $s5, 12($sp)
+		lw $s5, 12($sp)		# sort the second half
 		lw $a1, 4($sp)
 		sub $a1, $a1, $s5
 		sll $s5, $s5, 2
@@ -120,8 +120,7 @@ merge_sort:	bgt $a1, 1, else2
 		jal merge_sort
 		lw $a0, 8($sp)
 		lw $a1, 4($sp)
-		jal merge
+		jal merge		# mrege the two sorted halves
 		lw $ra, ($sp)
-		addiu $sp, $sp, 16
-		jr $ra
-		
+		addiu $sp, $sp, 16	# deallocate
+		jr $ra			# return
