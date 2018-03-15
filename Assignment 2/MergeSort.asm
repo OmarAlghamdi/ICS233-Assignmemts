@@ -2,7 +2,7 @@
 # 201528950
 .data
 prompt1:	.asciiz	"Enter the lenght of your array\n"
-prompt2:	.asciiz	"Enter the elements of your array"
+prompt2:	.asciiz	"Enter the elements of your array, one element by row\n"
 msg1:		.asciiz	"The unsorted array is:\n"
 msg2:		.ascii	"The sorted array is:\n"
 .text
@@ -17,10 +17,31 @@ msg2:		.ascii	"The sorted array is:\n"
 	li $v0, 9
 	syscall
 	move $s1, $v0	# store array location
+	sll $s2, $s0, 2	# store the last index
+	add $s2, $s2, $s1
 	jal read_array
 	
-read_array:
-print_array:
+read_array:	la $a0, prompt2		# prompts for array content
+		li $v0, 4
+		syscall
+		move $t0, $s1
+	loop1:	li $v0, 5		# reads element 
+		syscall
+		sw $v0, ($t0)
+		addi $t0, $t0, 4
+		blt $t0, $s2, loop1	# read another element if has not reached the last index
+print_array:	la $a0, msg1
+		li $v0, 4
+		syscall
+		move $t0, $s1
+	loop2:	lw $a0, ($t0)		# prints an element
+		li $v0, 1
+		syscall
+		li $a0, 44		# prints comma
+		li $v0, 11
+		syscall
+		addi $t0, $t0, 4
+		blt $t0, $s2, loop2
 merge:
 merge_sort:
 exit;	li $v0, 10
