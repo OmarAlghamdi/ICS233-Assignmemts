@@ -27,14 +27,16 @@ msg2:		.ascii	"\nThe sorted array is:\n"
 	la $a0, msg1	# print the unordered array
 	li $v0, 4
 	syscall
+	move $a0, $s1
+	move $a1, $s0
 	jal print_array
-	la $a0, msg2	# print the ordered array
+	la $a0, msg2	
 	li $v0, 4
 	syscall
 	move $a0, $s1	# sort the array
 	move $a1, $s0
 	jal merge_sort
-	jal print_array
+	jal print_array	# print the ordered array
 exit:	li $v0, 10	# exit
 	syscall	
 ###############################################################################	
@@ -48,10 +50,13 @@ read_array:	addiu $sp, $sp -4
 		syscall
 		sw $v0, ($t0)
 		addiu $t0, $t0, 4
-		blt $t0, $s2, loop1	# read another element if has not reached the last index
+		blt $t0, $s2, loop1	# read another eement if has not reached the last index
+		addiu $sp, $sp 4
 		jr $ra
 ###############################################################################
-print_array:	move $t0, $s1
+print_array:	addiu $sp, $sp -4
+		sw $a0, ($sp)
+		lw $t0, ($sp)
 	loop2:	lw $a0, ($t0)		# prints an element
 		li $v0, 1
 		syscall
@@ -60,6 +65,7 @@ print_array:	move $t0, $s1
 		syscall
 		addiu $t0, $t0, 4
 		blt $t0, $s2, loop2
+		addiu $sp, $sp 4
 		jr $ra
 ###############################################################################
 merge:		sll $t0, $a1, 2		# allocate B[] on the stack
