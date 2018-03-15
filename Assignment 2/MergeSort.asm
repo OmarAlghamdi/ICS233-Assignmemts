@@ -21,6 +21,9 @@ msg2:		.ascii	"The sorted array is:\n"
 	add $s2, $s2, $s1
 	jal read_array
 	jal print_array
+	move $a0, $s1
+	move $a1, $s0
+	jal merge_sort
 exit:	li $v0, 10
 	syscall		
 read_array:	la $a0, prompt2		# prompts for array content
@@ -48,7 +51,7 @@ print_array:	la $a0, msg1
 		jr $ra
 merge:		sll $t0, $a1, 2		# allocate B[] on the stack
 		move $fp, $sp		# B[n-1]
-		add $sp,$sp, $t0	# B[0]
+		sub $sp,$sp, $t0	# B[0]
 		srl $t0, $a1, 1		# t0 = m = n/2
 		move $t1, $zero		# t1 = i = 0
 		move $t2, $t0		# t2 = j = m 
@@ -63,12 +66,12 @@ merge:		sll $t0, $a1, 2		# allocate B[] on the stack
 		lw $t5, ($t5)
 		sll $t6, $t3, 2		# B[k]
 		add $t6, $t6, $sp
-	if:	bgt $t4, $t5, else
+	if:	bgt $t4, $t5, else1
 		sw $t4, ($t6)		# B[k] = A[i]
 		addi $t1, $t1, 1	# i++
 		addi $t3, $t3, 1	# k++
 		j while1
-	else:	sw $t5, ($t6)		# B[k] = A[j]
+	else1:	sw $t5, ($t6)		# B[k] = A[j]
 		addi $t2, $t2, 1	# j++
 		addi $t3, $t3, 1	# k++
 		j while1
@@ -92,7 +95,28 @@ merge:		sll $t0, $a1, 2		# allocate B[] on the stack
 		addi $t1, $t1, 1	# i++
 		blt $t1, $t3, loop3	# i < k
 		move $sp, $fp		# deallocate 
+		jr $ra	
+merge_sort:	bgt $a1, 1, else2	
+		jr $ra			# base case
+	else2:	addi $sp, $sp, -16	# allocate stack
+		sw $a0, 8($sp)		# store A[0]
+		sw $a1, 4($sp)		# store n
+		sw $ra, ($sp)		# store the return address
+		srl $s5, $a1, 1		# s5 = m =n/2
+		sw $s5, 12($sp)		#store m
+		lw $a0, 8($sp)
+		lw $a1, 12($sp)
+		jal merge_sort
+		lw $s5, 12($sp)
+		lw $a1, 4($sp)
+		sub $a1, $a1, $s5
+		sll $s5, $s5, 2
+		lw $a0, 8($sp)
+		add $a0, $a0, $s5
+		jal merge_sort
+		lw $a0, 8($sp)
+		lw $a1, 4($sp)
+		jal merge
+		addi $sp, $sp, 16
 		jr $ra
 		
-merge_sort:
-
