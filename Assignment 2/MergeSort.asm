@@ -20,7 +20,9 @@ msg2:		.ascii	"The sorted array is:\n"
 	sll $s2, $s0, 2	# store the last index
 	add $s2, $s2, $s1
 	jal read_array
-	
+	jal print_array
+exit:	li $v0, 10
+	syscall		
 read_array:	la $a0, prompt2		# prompts for array content
 		li $v0, 4
 		syscall
@@ -30,6 +32,7 @@ read_array:	la $a0, prompt2		# prompts for array content
 		sw $v0, ($t0)
 		addi $t0, $t0, 4
 		blt $t0, $s2, loop1	# read another element if has not reached the last index
+		jr $ra
 print_array:	la $a0, msg1
 		li $v0, 4
 		syscall
@@ -42,7 +45,7 @@ print_array:	la $a0, msg1
 		syscall
 		addi $t0, $t0, 4
 		blt $t0, $s2, loop2
+		jr $ra
 merge:
 merge_sort:
-exit;	li $v0, 10
-	syscall	
+
