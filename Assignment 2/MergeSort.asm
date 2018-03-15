@@ -1,10 +1,12 @@
 # Omar Alghamdi
 # 201528950
+###############################################################################
 .data
 prompt1:	.asciiz	"Enter the lenght of your array\n"
 prompt2:	.asciiz	"Enter the elements of your array, one element by row\n"
 msg1:		.asciiz	"The unsorted array is:\n"
 msg2:		.ascii	"\nThe sorted array is:\n"
+###############################################################################
 .text
 	la $a0, prompt1	# prompts for array size
 	li $v0, 4
@@ -19,7 +21,9 @@ msg2:		.ascii	"\nThe sorted array is:\n"
 	move $s1, $v0	# store array location
 	sll $s2, $s0, 2	# store the last index
 	addu $s2, $s2, $s1
-	jal read_array	# reads the array
+	move $a0, $s1	# reads the array
+	move $a1, $s0
+	jal read_array	
 	la $a0, msg1	# print the unordered array
 	li $v0, 4
 	syscall
@@ -32,17 +36,21 @@ msg2:		.ascii	"\nThe sorted array is:\n"
 	jal merge_sort
 	jal print_array
 exit:	li $v0, 10	# exit
-	syscall		
-read_array:	la $a0, prompt2		# prompts for array content
+	syscall	
+###############################################################################	
+read_array:	addiu $sp, $sp -4
+		sw $a0, ($sp)
+		la $a0, prompt2		# prompts for array content
 		li $v0, 4
 		syscall
-		move $t0, $s1
+		lw $t0, ($sp)
 	loop1:	li $v0, 5		# reads element 
 		syscall
 		sw $v0, ($t0)
 		addiu $t0, $t0, 4
 		blt $t0, $s2, loop1	# read another element if has not reached the last index
 		jr $ra
+###############################################################################
 print_array:	move $t0, $s1
 	loop2:	lw $a0, ($t0)		# prints an element
 		li $v0, 1
@@ -53,6 +61,7 @@ print_array:	move $t0, $s1
 		addiu $t0, $t0, 4
 		blt $t0, $s2, loop2
 		jr $ra
+###############################################################################
 merge:		sll $t0, $a1, 2		# allocate B[] on the stack
 		move $fp, $sp		# B[n-1]
 		sub $sp,$sp, $t0	# B[0]
@@ -99,7 +108,8 @@ merge:		sll $t0, $a1, 2		# allocate B[] on the stack
 		addiu $t1, $t1, 1	# i++
 		blt $t1, $t3, loop3	# i < k
 		move $sp, $fp		# deallocate 
-		jr $ra	
+		jr $ra
+###############################################################################
 merge_sort:	bgt $a1, 1, else2	
 		jr $ra			# base case
 	else2:	addiu $sp, $sp, -16	# allocate stack
