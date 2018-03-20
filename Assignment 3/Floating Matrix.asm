@@ -3,21 +3,31 @@
 .data
 fMatrix:	.float	0:400
 prompt1:	.asciiz	"Choose what you want to do\n"
+choice1:	.asciiz	"1. Enter a Matrix of Single-Precision Floats\n"
 prompt2:	.asciiz	"Enter the size of the matrix. size should be from 2 to 10\t"
 prompt3:	.asciiz	"Enter matrix elements row by row\n"
-choice1:	.asciiz	"1. Enter a Matrix of Single-Precision Floats\n"
 choice2:	.asciiz	"2. Compute a Row Sum\n"
+prompt4:	.asciiz	"Enter row number from 0 to N-1\n"
+result1:	.asciiz	"the some of the row = "
 choice3:	.asciiz	"3. Compute a Column Sum\n"
 choice4:	.asciiz	"4. Locate the Minimum Element in the Matrix\n"
 choice5:	.asciiz	"5. Exit the Program\n"
-errMSG1:	.asciiz	"invalid choice. please try again"
-errMSG2:	.asciiz	"invalid matrix size. please try again"
+errMSG1:	.asciiz	"invalid choice. please try again\n"
+errMSG2:	.asciiz	"invalid matrix size. please try again\n"
+errMSG3:	.asciiz	"invalid row number, please try again\n"
 .text
 main:		jal choice
 		beq $v0, 1, sizeFill
+		beq $v0, 2, row
 		beq $v0, 5, exit
 sizeFill:	la $a0, fMatrix
 		jal size
+		move $s0, $v0	# stores matrix size (N)
+		j main
+row:		la $a0, fMatrix
+		move $a1, $s0
+		jal rowSum
+		j main		
 exit:		li $v0, 10
 		syscall	
 
@@ -69,14 +79,45 @@ input:	move $t1, $v0	# matrix size
 	la $a0, prompt3
 	li $v0, 4
 	syscall
-fill:	li $v0, 5	# reads element
+fill:	li $v0, 6	# reads element
 	syscall
-	sw $v0, ($t0)	# stores element
+	swc1 $f0, ($t0)	# stores element
 	addiu $t0, $t0, 4
 	blt $t0, $t2, fill
 	move $v0, $t1	# returns the size (N)
 	jr $ra
 
-
+rowSum:	move $t0, $a0	# stores matrix address
+	la $a0, prompt4	# prompts for row number
+	li $v0, 4
+	syscall
+read3:	li $v0, 5	# reads user input
+	syscall
+	bge $v0, 0, sum
+	ble $v0, $a1, sum
+	la $a0, errMSG3	# reads row number
+	li $v0, 4
+	syscall
+	j read3
+sum:	mul $t1, $a1, $v0
+	sll $t1, $t1, 2
+	addu $t1, $t1, $t0	# frist address in row
+	sll $t2, $a1, 2
+	addiu $t2, $t2, -4
+	addu $t2, $t2, $t1	# last address in row
+	lwc1 $f12, ($t1)
+loop:	addiu $t1, $t1, 4
+	lwc1 $f0, ($t1)
+	add.s $f12, $f12, $f0
+	blt $t1, $t2, loop
+	la $a0, result1
+	li $v0, 4
+	syscall
+	li $v0, 2
+	syscall
+	li $a0, 10
+	li $v0, 11
+	syscall
+	jr $ra	
 
 
