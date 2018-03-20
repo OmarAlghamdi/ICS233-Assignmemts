@@ -8,17 +8,21 @@ prompt2:	.asciiz	"Enter the size of the matrix. size should be from 2 to 10\t"
 prompt3:	.asciiz	"Enter matrix elements row by row\n"
 choice2:	.asciiz	"2. Compute a Row Sum\n"
 prompt4:	.asciiz	"Enter row number from 0 to N-1\n"
-result1:	.asciiz	"the some of the row = "
+result1:	.asciiz	"the sum of the row = "
 choice3:	.asciiz	"3. Compute a Column Sum\n"
+prompt5:	.asciiz	"Enter column number from 0 to N-1\n"
+result2:	.asciiz	"the sum of column = "
 choice4:	.asciiz	"4. Locate the Minimum Element in the Matrix\n"
 choice5:	.asciiz	"5. Exit the Program\n"
 errMSG1:	.asciiz	"invalid choice. please try again\n"
 errMSG2:	.asciiz	"invalid matrix size. please try again\n"
 errMSG3:	.asciiz	"invalid row number, please try again\n"
+errMSG4:	.asciiz	"invalid column number, please try again\n"
 .text
 main:		jal choice
 		beq $v0, 1, sizeFill
 		beq $v0, 2, row
+		beq $v0, 3, column
 		beq $v0, 5, exit
 sizeFill:	la $a0, fMatrix
 		jal size
@@ -27,7 +31,11 @@ sizeFill:	la $a0, fMatrix
 row:		la $a0, fMatrix
 		move $a1, $s0
 		jal rowSum
-		j main		
+		j main
+column:		la $a0, fMatrix
+		move $a1, $s0
+		jal columnSum
+		j main	
 exit:		li $v0, 10
 		syscall	
 
@@ -93,23 +101,23 @@ rowSum:	move $t0, $a0	# stores matrix address
 	syscall
 read3:	li $v0, 5	# reads user input
 	syscall
-	bge $v0, 0, sum
-	ble $v0, $a1, sum
+	bge $v0, 0, sum1
+	ble $v0, $a1, sum1
 	la $a0, errMSG3	# reads row number
 	li $v0, 4
 	syscall
 	j read3
-sum:	mul $t1, $a1, $v0
+sum1:	mul $t1, $a1, $v0
 	sll $t1, $t1, 2
 	addu $t1, $t1, $t0	# frist address in row
 	sll $t2, $a1, 2
 	addiu $t2, $t2, -4
 	addu $t2, $t2, $t1	# last address in row
 	lwc1 $f12, ($t1)
-loop:	addiu $t1, $t1, 4
+loop1:	addiu $t1, $t1, 4
 	lwc1 $f0, ($t1)
 	add.s $f12, $f12, $f0
-	blt $t1, $t2, loop
+	blt $t1, $t2, loop1
 	la $a0, result1
 	li $v0, 4
 	syscall
@@ -120,4 +128,36 @@ loop:	addiu $t1, $t1, 4
 	syscall
 	jr $ra	
 
-
+columnSum:	move $t0, $a0	# stores matrix address
+		la $a0, prompt5	# prompts for column number
+		li $v0, 4
+		syscall
+read4:		li $v0, 5	# reads user input
+		syscall
+		bge $v0, 0, sum2
+		ble $v0, $a1, sum2
+		la $a0, errMSG4	# reads row number
+		li $v0, 4
+		syscall
+		j read4
+sum2:		sll $t1, $v0, 2
+		addu $t1, $t1, $t0	# frist address in column
+		addiu $t2, $a1, -1
+		mul $t2, $t2, $a1
+		sll $t2, $t2, 2	
+		addu $t2, $t2, $t1	# last address in column
+		sll $t3, $a1, 2		# increment amount
+		lwc1 $f12, ($t1)
+loop2:		addu $t1, $t1, $t3
+		lwc1 $f0, ($t1)
+		add.s $f12, $f12, $f0
+		blt $t1, $t2, loop2
+		la $a0, result2
+		li $v0, 4
+		syscall
+		li $v0, 2
+		syscall
+		li $a0, 10
+		li $v0, 11
+		syscall
+		jr $ra			
