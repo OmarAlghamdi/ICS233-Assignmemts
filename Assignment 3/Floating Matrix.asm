@@ -13,6 +13,9 @@ choice3:	.asciiz	"3. Compute a Column Sum\n"
 prompt5:	.asciiz	"Enter column number from 0 to N-1\n"
 result2:	.asciiz	"the sum of column = "
 choice4:	.asciiz	"4. Locate the Minimum Element in the Matrix\n"
+result3_1:	.asciiz	"the minimum = "
+result3_2:	.asciiz	"\nit is in row: "
+result3_3:	.asciiz	"\nand in column: "
 choice5:	.asciiz	"5. Exit the Program\n"
 errMSG1:	.asciiz	"invalid choice. please try again\n"
 errMSG2:	.asciiz	"invalid matrix size. please try again\n"
@@ -23,6 +26,7 @@ main:		jal choice
 		beq $v0, 1, sizeFill
 		beq $v0, 2, row
 		beq $v0, 3, column
+		beq $v0, 4, min
 		beq $v0, 5, exit
 sizeFill:	la $a0, fMatrix
 		jal size
@@ -35,7 +39,11 @@ row:		la $a0, fMatrix
 column:		la $a0, fMatrix
 		move $a1, $s0
 		jal columnSum
-		j main	
+		j main
+min:		la $a0, fMatrix
+		move $a1, $s0
+		jal minimum
+		j main
 exit:		li $v0, 10
 		syscall	
 
@@ -160,4 +168,45 @@ loop2:		addu $t1, $t1, $t3
 		li $a0, 10
 		li $v0, 11
 		syscall
-		jr $ra			
+		jr $ra
+		
+
+minimum:	move $t0, $a0
+		mul $t1, $a1, $a1
+		sll $t1, $t1, 2
+		addiu $t1, $t1, -4
+		addu $t1, $t1, $a0	# last address	
+		move $t2, $t0		# t2 = least address
+loop3:		addiu $t0, $t0, 4
+		lwc1 $f0, ($t0)
+		lwc1 $f1, -4($t0)
+		c.lt.s $f0, $f1
+		bc1f skip
+		move $t2, $t0	
+skip:		blt $t0, $t1, loop3
+		lwc1 $f12, ($t2)
+		sub $t2, $t2, $a0
+		srl $t2, $t2, 2
+		div $t2, $a1
+		la $a0, result3_1
+		li $v0, 4
+		syscall
+		li $v0, 2
+		syscall
+		la $a0, result3_2
+		li $v0, 4
+		syscall
+		mflo $a0
+		li $v0, 1
+		syscall
+		la $a0, result3_3
+		li $v0, 4
+		syscall		
+		mfhi $a0
+		li $v0, 1
+		syscall
+		li $a0, 10
+		li $v0, 11
+		syscall				
+		jr $ra
+		
