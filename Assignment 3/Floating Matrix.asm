@@ -1,7 +1,8 @@
 # Omar Alghamdi
 # 201528950
+
 .data
-fMatrix:	.float	0:400
+fMatrix:	.float	0:400	# allocate 400 bytes (100 words) statically and initalize them to 0
 prompt1:	.asciiz	"Choose what you want to do\n"
 choice1:	.asciiz	"1. Enter a Matrix of Single-Precision Floats\n"
 prompt2:	.asciiz	"Enter the size of the matrix. size should be from 2 to 10\t"
@@ -22,128 +23,128 @@ errMSG2:	.asciiz	"invalid matrix size. please try again\n"
 errMSG3:	.asciiz	"invalid row number, please try again\n"
 errMSG4:	.asciiz	"invalid column number, please try again\n"
 .text
-main:		jal choice
-		beq $v0, 1, sizeFill
-		beq $v0, 2, row
-		beq $v0, 3, column
-		beq $v0, 4, min
-		beq $v0, 5, exit
-sizeFill:	la $a0, fMatrix
-		jal size
-		move $s0, $v0	# stores matrix size (N)
-		j main
-row:		la $a0, fMatrix
-		move $a1, $s0
-		jal rowSum
-		j main
-column:		la $a0, fMatrix
-		move $a1, $s0
-		jal columnSum
-		j main
-min:		la $a0, fMatrix
-		move $a1, $s0
-		jal minimum
-		j main
-exit:		li $v0, 10
+main:		jal choice		# calls function "choice" that prints the menu and asks user for input
+		beq $v0, 1, sizeFill	# user chose to enter matrix size and its content
+		beq $v0, 2, row		# user chose to view the sum of a row
+		beq $v0, 3, column	# user chose to view the sum of a column
+		beq $v0, 4, min		# user chose to view the least element in the matrix
+		beq $v0, 5, exit	# user chose to exit the program
+sizeFill:	la $a0, fMatrix		# loads the address of staticly allocated matrix
+		jal size_content	# calls function "size_content" which reads the size of matrix and and its content and returns the size of matrix
+		move $s0, $v0		# stores matrix size (N)
+		j main			# returns to the menu
+row:		la $a0, fMatrix		# loads the addressz of matrix
+		move $a1, $s0		# passes the size of matrix
+		jal rowSum		# calls function "rowSum" which asks user for a row number and prints the sum of its elements
+		j main			# returns to the menu
+column:		la $a0, fMatrix		# loads the addressz of matrix
+		move $a1, $s0		# passes the size of matrix
+		jal columnSum		# calls function "columnSum" which asks user for a column number and prints the sum of its elements
+		j main			# returns to the menu
+min:		la $a0, fMatrix		# loads the addressz of matrix
+		move $a1, $s0		# passes the size of matrix
+		jal minimum		# calls function "minimum" which prints the least element in the matrix
+		j main			# returns to the menu
+exit:		li $v0, 10		# exits the program
 		syscall	
 
-choice:	la $a0, prompt1	# prints the menu
-	li $v0, 4
-	syscall
-	la $a0, choice1
-	li $v0, 4
-	syscall
-	la $a0, choice2
-	li $v0, 4
-	syscall
-	la $a0, choice3
-	li $v0, 4
-	syscall
-	la $a0, choice4
-	li $v0, 4
-	syscall
-	la $a0, choice5
-	li $v0, 4
-	syscall
-read1:	li $v0, 5	# reads user choice
-	syscall
-	blt $v0, 1, err1
-	bgt $v0, 5, err1
-	jr $ra		# return user choice
-err1:	la $a0, errMSG1	# prints error message
-	li $v0, 4
-	syscall
-	j read1
-	
-
-size:	move $t0, $a0	# matrix address
-	la $a0, prompt2
-	li $v0, 4
-	syscall
-read2:	li $v0, 5
-	syscall
-	blt $v0, 2, err2
-	bgt $v0, 10, err2
-	move $t1, $v0	# matrix size	
-	mul $t2, $v0, $v0
-	sll $t2, $t2, 2
-	addu $t2, $t2, $t0	# last address
-	la $a0, prompt3
-	li $v0, 4
-	syscall
-fill:	li $v0, 6	# reads element
-	syscall
-	swc1 $f0, ($t0)	# stores element
-	addiu $t0, $t0, 4
-	blt $t0, $t2, fill
-	move $v0, $t1	# returns the size (N)
-	jr $ra
-err2:	la $a0, errMSG2	# prints error message
-	li $v0, 4
-	syscall
-	j read2
-rowSum:	move $t0, $a0	# stores matrix address
-	la $a0, prompt4	# prompts for row number
-	li $v0, 4
-	syscall
-read3:	li $v0, 5	# reads user input
-	syscall
-	bge $v0, 0, sum1
-	ble $v0, $a1, sum1
-	la $a0, errMSG3	# reads row number
-	li $v0, 4
-	syscall
-	j read3
-sum1:	mul $t1, $a1, $v0
-	sll $t1, $t1, 2
-	addu $t1, $t1, $t0	# frist address in row
-	sll $t2, $a1, 2
-	addiu $t2, $t2, -4
-	addu $t2, $t2, $t1	# last address in row
-	lwc1 $f12, ($t1)
-loop1:	addiu $t1, $t1, 4
-	lwc1 $f0, ($t1)
-	add.s $f12, $f12, $f0
-	blt $t1, $t2, loop1
-	la $a0, result1
-	li $v0, 4
-	syscall
-	li $v0, 2
-	syscall
-	li $a0, 10
-	li $v0, 11
-	syscall
-	jr $ra	
-
-columnSum:	move $t0, $a0	# stores matrix address
-		la $a0, prompt5	# prompts for column number
+choice:		la $a0, prompt1		# prints the menu
 		li $v0, 4
 		syscall
-read4:		li $v0, 5	# reads user input
+		la $a0, choice1
+		li $v0, 4
+		syscall
+		la $a0, choice2
+		li $v0, 4
+		syscall
+		la $a0, choice3
+		li $v0, 4
+		syscall
+		la $a0, choice4
+		li $v0, 4
+		syscall
+		la $a0, choice5
+		li $v0, 4
+		syscall
+	read1:	li $v0, 5		# reads user choice
+		syscall
+		blt $v0, 1, err1	# prints error message if user choice is either < 1
+		bgt $v0, 5, err1	# or > 5
+		jr $ra			# return user choice
+	err1:	la $a0, errMSG1		# prints error message
+		li $v0, 4
+		syscall
+		j read1			# reads another user choice
+	
+
+size_content:	move $t0, $a0		# matrix address
+		la $a0, prompt2		# prompts for matrix size
+		li $v0, 4
+		syscall
+	read2:	li $v0, 5		# reads matrix size
+		syscall
+		blt $v0, 2, err2	# prints error message if user choice either < 2
+		bgt $v0, 10, err2	# or > 10
+		move $t1, $v0		# matrix size (N)
+		mul $t2, $v0, $v0	# calculates the address of the last element in matrix with size N
+		sll $t2, $t2, 2
+		addu $t2, $t2, $t0	# t2 = last address
+		la $a0, prompt3		# prompts the user to enter matrix elements row by row
+		li $v0, 4
+		syscall
+	fill:	li $v0, 6		# reads an element
+		syscall
+		swc1 $f0, ($t0)		# stores the element
+		addiu $t0, $t0, 4
+		blt $t0, $t2, fill	# reads another element while the last element is not entered
+		move $v0, $t1		# returns the size (N)
+		jr $ra			# returns to main function
+	err2:	la $a0, errMSG2		# prints error message if the size of the matrix is not between 2 and 10
+		li $v0, 4
+		syscall
+		j read2			# reads another size
+rowSum:		move $t0, $a0		# stores matrix address
+		la $a0, prompt4		# prompts for row number
+		li $v0, 4
+		syscall
+read3:		li $v0, 5		# reads user input
+		syscall
+		bge $v0, 0, sum1
+		ble $v0, $a1, sum1
+		la $a0, errMSG3		# reads row number
+		li $v0, 4
+		syscall
+		j read3
+sum1:		mul $t1, $a1, $v0
+		sll $t1, $t1, 2
+		addu $t1, $t1, $t0	# frist address in row
+		sll $t2, $a1, 2
+		addiu $t2, $t2, -4
+		addu $t2, $t2, $t1	# last address in row
+		lwc1 $f12, ($t1)
+loop1:		addiu $t1, $t1, 4
+		lwc1 $f0, ($t1)
+		add.s $f12, $f12, $f0
+		blt $t1, $t2, loop1
+		la $a0, result1
+		li $v0, 4
+		syscall
+		li $v0, 2
+		syscall
+		li $a0, 10
+		li $v0, 11
+		syscall
+		jr $ra	
+
+columnSum:	move $t0, $a0		# stores matrix address
+		la $a0, prompt5		# prompts for column number
+		li $v0, 4
+		syscall
+read4:		li $v0, 5		# reads user input
 		syscall
 		bge $v0, 0, sum2
 		ble $v0, $a1, sum2
-		la $a0, errMSG4	# reads row number
+		la $a0, errMSG4		# reads row number
 		li $v0, 4
 		syscall
 		j read4
