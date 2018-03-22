@@ -122,15 +122,15 @@ rowSum:		move $t0, $a0		# stores matrix address
 		lwc1 $f0, ($t1)		# moves the next element to register f0
 		add.s $f12, $f12, $f0	# adds the next element to the the value of register f12 and stores the result in f12
 		blt $t1, $t2, loop1	# loops if last element in the row has not been added
-		la $a0, result1		# prints the result of summation
+		la $a0, result1		# prints the result of row summation
 		li $v0, 4
 		syscall
 		li $v0, 2
 		syscall
-		li $a0, 10
+		li $a0, 10		# prints line break
 		li $v0, 11
 		syscall
-		jr $ra
+		jr $ra			# returns to main function
 	err3:	la $a0, errMSG3		# prints error message if the row index is out of range
 		li $v0, 4
 		syscall
@@ -141,29 +141,29 @@ columnSum:	move $t0, $a0		# stores matrix address
 		syscall
 	read4:	li $v0, 5		# reads user input
 		syscall
-		blt $v0, 0, err4
-		bgt $v0, $a1, err4
-		sll $t1, $v0, 2
-		addu $t1, $t1, $t0	# frist address in column
-		addiu $t2, $a1, -1
+		blt $v0, 0, err4	# prints error message if the column indext is either < 0
+		bgt $v0, $a1, err4	# or > N-1
+		sll $t1, $v0, 2		# calculates the address of the column
+		addu $t1, $t1, $t0	# t1 = frist address in column
+		addiu $t2, $a1, -1	# calculates the last address in the column
 		mul $t2, $t2, $a1
 		sll $t2, $t2, 2	
-		addu $t2, $t2, $t1	# last address in column
-		sll $t3, $a1, 2		# increment amount
-		lwc1 $f12, ($t1)
-	loop2:	addu $t1, $t1, $t3
-		lwc1 $f0, ($t1)
-		add.s $f12, $f12, $f0
-		blt $t1, $t2, loop2
-		la $a0, result2
+		addu $t2, $t2, $t1	# t2 = last address in column
+		sll $t3, $a1, 2		# t3 = increment amount
+		lwc1 $f12, ($t1)	# moves the first element in the column to register f12
+	loop2:	addu $t1, $t1, $t3	# goes to the next element in the column
+		lwc1 $f0, ($t1)		# moves the next element to register f0
+		add.s $f12, $f12, $f0	# adds the next elemet to the value of f12 and stores the result in f12
+		blt $t1, $t2, loop2	# loops if the last element in the column has not been added
+		la $a0, result2		# prints the result of column summation
 		li $v0, 4
 		syscall
 		li $v0, 2
 		syscall
-		li $a0, 10
+		li $a0, 10		# prints line break
 		li $v0, 11
 		syscall
-		jr $ra
+		jr $ra			# returns to main function
 	err4:	la $a0, errMSG4		# prints error message if the column index is out of range
 		li $v0, 4
 		syscall
@@ -172,8 +172,8 @@ minimum:	move $t0, $a0
 		mul $t1, $a1, $a1
 		sll $t1, $t1, 2
 		addiu $t1, $t1, -4
-		addu $t1, $t1, $a0	# last address	
-		move $t2, $t0		# t2 = least address
+		addu $t1, $t1, $a0	# t1 = last address	
+		move $t2, $t0		# t2 = last address
 	loop3:	addiu $t0, $t0, 4
 		lwc1 $f0, ($t0)
 		lwc1 $f1, -4($t0)
