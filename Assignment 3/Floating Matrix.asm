@@ -169,40 +169,40 @@ columnSum:	move $t0, $a0		# stores matrix address
 		syscall
 		j read4			# reads another column index
 minimum:	move $t0, $a0
-		mul $t1, $a1, $a1
+		mul $t1, $a1, $a1	# calculates the last address of the matrix
 		sll $t1, $t1, 2
 		addiu $t1, $t1, -4
-		addu $t1, $t1, $a0	# t1 = last address	
-		move $t2, $t0		# t2 = last address
-	loop3:	addiu $t0, $t0, 4
-		lwc1 $f0, ($t0)
+		addu $t1, $t1, $a0	# t1 = last address
+		move $t2, $t0		# t2 = the address of the least element	
+	loop3:	addiu $t0, $t0, 4	# increment the index
+		lwc1 $f0, ($t0)		# compare two elements
 		lwc1 $f1, -4($t0)
-		c.lt.s $f0, $f1
-		bc1f skip
-		move $t2, $t0	
-	skip:	blt $t0, $t1, loop3
-		lwc1 $f12, ($t2)
-		sub $t2, $t2, $a0
+		c.lt.s $f0, $f1		# if the previous element is smaller skip
+		bc1f skip		
+		move $t2, $t0		# change the address of the least element
+	skip:	blt $t0, $t1, loop3	# loops if the last element has not been examined
+		lwc1 $f12, ($t2)	# loads the least element to register f12
+		sub $t2, $t2, $a0	# calculates where element is (row and column)
 		srl $t2, $t2, 2
 		div $t2, $a1
-		la $a0, result3_1
+		la $a0, result3_1	# prints the least element
 		li $v0, 4
 		syscall
 		li $v0, 2
 		syscall
-		la $a0, result3_2
+		la $a0, result3_2	# prints the row index
 		li $v0, 4
 		syscall
 		mflo $a0
 		li $v0, 1
 		syscall
-		la $a0, result3_3
+		la $a0, result3_3	# prints the column index
 		li $v0, 4
 		syscall		
 		mfhi $a0
 		li $v0, 1
 		syscall
-		li $a0, 10
+		li $a0, 10		# prints line break
 		li $v0, 11
 		syscall				
-		jr $ra
+		jr $ra			# returns to main function
