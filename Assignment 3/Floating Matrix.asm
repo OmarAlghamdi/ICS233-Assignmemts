@@ -107,22 +107,18 @@ rowSum:		move $t0, $a0		# stores matrix address
 		la $a0, prompt4		# prompts for row number
 		li $v0, 4
 		syscall
-read3:		li $v0, 5		# reads user input
+	read3:	li $v0, 5		# reads user input
 		syscall
-		bge $v0, 0, sum1
-		ble $v0, $a1, sum1
-		la $a0, errMSG3		# reads row number
-		li $v0, 4
-		syscall
-		j read3
-sum1:		mul $t1, $a1, $v0
+		blt $v0, 0, err3
+		bgt $v0, $a1, err3
+		mul $t1, $a1, $v0
 		sll $t1, $t1, 2
 		addu $t1, $t1, $t0	# frist address in row
 		sll $t2, $a1, 2
 		addiu $t2, $t2, -4
 		addu $t2, $t2, $t1	# last address in row
 		lwc1 $f12, ($t1)
-loop1:		addiu $t1, $t1, 4
+	loop1:	addiu $t1, $t1, 4
 		lwc1 $f0, ($t1)
 		add.s $f12, $f12, $f0
 		blt $t1, $t2, loop1
@@ -134,13 +130,17 @@ loop1:		addiu $t1, $t1, 4
 		li $a0, 10
 		li $v0, 11
 		syscall
-		jr $ra	
+		jr $ra
+	err3:	la $a0, errMSG3		# prints error message if the row index is out of range
+		li $v0, 4
+		syscall
+		j read3
 
 columnSum:	move $t0, $a0		# stores matrix address
 		la $a0, prompt5		# prompts for column number
 		li $v0, 4
 		syscall
-read4:		li $v0, 5		# reads user input
+	read4:	li $v0, 5		# reads user input
 		syscall
 		bge $v0, 0, sum2
 		ble $v0, $a1, sum2
@@ -148,7 +148,7 @@ read4:		li $v0, 5		# reads user input
 		li $v0, 4
 		syscall
 		j read4
-sum2:		sll $t1, $v0, 2
+	sum2:	sll $t1, $v0, 2
 		addu $t1, $t1, $t0	# frist address in column
 		addiu $t2, $a1, -1
 		mul $t2, $t2, $a1
@@ -156,7 +156,7 @@ sum2:		sll $t1, $v0, 2
 		addu $t2, $t2, $t1	# last address in column
 		sll $t3, $a1, 2		# increment amount
 		lwc1 $f12, ($t1)
-loop2:		addu $t1, $t1, $t3
+	loop2:	addu $t1, $t1, $t3
 		lwc1 $f0, ($t1)
 		add.s $f12, $f12, $f0
 		blt $t1, $t2, loop2
@@ -169,21 +169,19 @@ loop2:		addu $t1, $t1, $t3
 		li $v0, 11
 		syscall
 		jr $ra
-		
-
 minimum:	move $t0, $a0
 		mul $t1, $a1, $a1
 		sll $t1, $t1, 2
 		addiu $t1, $t1, -4
 		addu $t1, $t1, $a0	# last address	
 		move $t2, $t0		# t2 = least address
-loop3:		addiu $t0, $t0, 4
+	loop3:	addiu $t0, $t0, 4
 		lwc1 $f0, ($t0)
 		lwc1 $f1, -4($t0)
 		c.lt.s $f0, $f1
 		bc1f skip
 		move $t2, $t0	
-skip:		blt $t0, $t1, loop3
+	skip:	blt $t0, $t1, loop3
 		lwc1 $f12, ($t2)
 		sub $t2, $t2, $a0
 		srl $t2, $t2, 2
@@ -209,4 +207,3 @@ skip:		blt $t0, $t1, loop3
 		li $v0, 11
 		syscall				
 		jr $ra
-		
