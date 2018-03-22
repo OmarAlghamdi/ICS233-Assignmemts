@@ -82,13 +82,9 @@ size:	move $t0, $a0	# matrix address
 	syscall
 read2:	li $v0, 5
 	syscall
-	bge $v0, 2, input
-	ble $v0, 10, input
-	la $a0, errMSG2	# prints error message
-	li $v0, 4
-	syscall
-	j read2
-input:	move $t1, $v0	# matrix size	
+	blt $v0, 2, err2
+	bgt $v0, 10, err2
+	move $t1, $v0	# matrix size	
 	mul $t2, $v0, $v0
 	sll $t2, $t2, 2
 	addu $t2, $t2, $t0	# last address
@@ -102,7 +98,10 @@ fill:	li $v0, 6	# reads element
 	blt $t0, $t2, fill
 	move $v0, $t1	# returns the size (N)
 	jr $ra
-
+err2:	la $a0, errMSG2	# prints error message
+	li $v0, 4
+	syscall
+	j read2
 rowSum:	move $t0, $a0	# stores matrix address
 	la $a0, prompt4	# prompts for row number
 	li $v0, 4
