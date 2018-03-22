@@ -141,13 +141,9 @@ columnSum:	move $t0, $a0		# stores matrix address
 		syscall
 	read4:	li $v0, 5		# reads user input
 		syscall
-		bge $v0, 0, sum2
-		ble $v0, $a1, sum2
-		la $a0, errMSG4		# reads row number
-		li $v0, 4
-		syscall
-		j read4
-	sum2:	sll $t1, $v0, 2
+		blt $v0, 0, err4
+		bgt $v0, $a1, err4
+		sll $t1, $v0, 2
 		addu $t1, $t1, $t0	# frist address in column
 		addiu $t2, $a1, -1
 		mul $t2, $t2, $a1
@@ -168,6 +164,10 @@ columnSum:	move $t0, $a0		# stores matrix address
 		li $v0, 11
 		syscall
 		jr $ra
+	err4:	la $a0, errMSG4		# prints error message if the column index is out of range
+		li $v0, 4
+		syscall
+		j read4			# reads another column index
 minimum:	move $t0, $a0
 		mul $t1, $a1, $a1
 		sll $t1, $t1, 2
