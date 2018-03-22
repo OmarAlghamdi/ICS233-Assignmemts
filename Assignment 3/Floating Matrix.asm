@@ -109,20 +109,20 @@ rowSum:		move $t0, $a0		# stores matrix address
 		syscall
 	read3:	li $v0, 5		# reads user input
 		syscall
-		blt $v0, 0, err3
-		bgt $v0, $a1, err3
-		mul $t1, $a1, $v0
-		sll $t1, $t1, 2
-		addu $t1, $t1, $t0	# frist address in row
-		sll $t2, $a1, 2
+		blt $v0, 0, err3	# prints error message it the index of the row is either < 0
+		bgt $v0, $a1, err3	# or > N-1
+		mul $t1, $a1, $v0	# calculates row address
+		sll $t1, $t1, 2		
+		addu $t1, $t1, $t0	# t1 = frist address in row
+		sll $t2, $a1, 2		# calculates the last address or row
 		addiu $t2, $t2, -4
-		addu $t2, $t2, $t1	# last address in row
-		lwc1 $f12, ($t1)
-	loop1:	addiu $t1, $t1, 4
-		lwc1 $f0, ($t1)
-		add.s $f12, $f12, $f0
-		blt $t1, $t2, loop1
-		la $a0, result1
+		addu $t2, $t2, $t1	# t2 = last address in row
+		lwc1 $f12, ($t1)	# moves the first element of the row to register f12
+	loop1:	addiu $t1, $t1, 4	# goes to the next element in the row
+		lwc1 $f0, ($t1)		# moves the next element to register f0
+		add.s $f12, $f12, $f0	# adds the next element to the the value of register f12 and stores the result in f12
+		blt $t1, $t2, loop1	# loops if last element in the row has not been added
+		la $a0, result1		# prints the result of summation
 		li $v0, 4
 		syscall
 		li $v0, 2
@@ -134,8 +134,7 @@ rowSum:		move $t0, $a0		# stores matrix address
 	err3:	la $a0, errMSG3		# prints error message if the row index is out of range
 		li $v0, 4
 		syscall
-		j read3
-
+		j read3			# reads another row index
 columnSum:	move $t0, $a0		# stores matrix address
 		la $a0, prompt5		# prompts for column number
 		li $v0, 4
